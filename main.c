@@ -54,13 +54,12 @@ GUI(int screenWidth,int screenHeight)
    
   while (1);
 }*/
-
-#include "boring.h"
+#include "io.h"
+#include "fb.h"
 
 void main()
 {
-
-    uart_init();
+   uart_init();
     fb_init();
 
     drawRect(150,150,400,400,0x03,0);
@@ -76,5 +75,5 @@ void main()
 
     drawLine(100,500,350,700,0x0c);
 
-    while (1);
+  while (1);
 }

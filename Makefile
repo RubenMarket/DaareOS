@@ -1,30 +1,32 @@
 CFILES = $(wildcard *.c)
 OFILES = $(CFILES:.c=.o)
-GCCFLAGS = -mcpu=cortex-a7 -fpic -ffreestanding
-GCCPATH = \arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi\bin
+GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
+GCCPATH = \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin
 
 all: clean kernel8.img
 
 boot.o: boot.S
-	$(GCCPATH)\arm-none-eabi-gcc $(GCCFLAGS) -c boot.S -o boot.o
+	$(GCCPATH)\aarch64-none-elf-gcc $(GCCFLAGS) -c boot.S -o boot.o
 
 %.o: %.c
-	$(GCCPATH)\arm-none-eabi-gcc $(GCCFLAGS) -c $< -o $@
+	$(GCCPATH)\aarch64-none-elf-gcc $(GCCFLAGS) -c $< -o $@
 
 kernel8.img: boot.o $(OFILES)
-	$(GCCPATH)\arm-none-eabi-gcc -nostdlib boot.o $(OFILES) -T link.ld -o DaareOS.elf
-	$(GCCPATH)\arm-none-eabi-objcopy -O binary DaareOS.elf kernel8.img
+	$(GCCPATH)\aarch64-none-elf-ld -nostdlib boot.o $(OFILES) -T link.ld -o kernel8.elf
+	$(GCCPATH)\aarch64-none-elf-objcopy -O binary kernel8.elf kernel8.img
 
 clean:
 	del kernel8.elf *.o *.img
 
 
-# \arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi\bin\arm-none-eabi-gcc -mcpu=cortex-a7 -fpic -ffreestanding -c boot.S -o boot.o
+# \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin\aarch64-none-elf-gcc -mcpu=cortex-a72 -fpic -ffreestanding -c boot.S -o boot.o
 
-# \arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi\bin\arm-none-eabi-gcc -mcpu=cortex-a7 -fpic -ffreestanding -std=gnu99 -c main.c -o main.o -O2 -Wall -Wextra
+# \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin\aarch64-none-elf-gcc -mcpu=cortex-a72 -fpic -ffreestanding -std=gnu99 -c main.c -o main.o -O2 -Wall -Wextra
 
-# \arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi\bin\arm-none-eabi-gcc -T link.ld -o DaareOS.elf -ffreestanding -O2 -nostdlib boot.o main.o
+# \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin\aarch64-none-elf-gcc -mcpu=cortex-a72 -fpic -ffreestanding -std=gnu99 -c io.c -o io.o -O2 -Wall -Wextra
 
-# \arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi\bin\arm-none-eabi-objcopy -O binary DaareOS.elf exe/kernel8.img
+# \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin\aarch64-none-elf-ld -T link.ld -o DaareOS.elf -m aarch64elf -nostdlib boot.o main.o
 
-# MAKE
+# \arm-gnu-toolchain-aarch64-none-elf\13.2-Rel1\bin\aarch64-none-elf-objcopy -O binary DaareOS.elf kernel8.img
+
+# MAKE aarch64-elf-gcc 
