@@ -26,9 +26,9 @@
     1G raspberryi pi 2b specs
 
 
-   \qemu\qemu-system-arm -m 1G -M raspi2b -serial stdio -kernel myos.elf
-   \qemu\qemu-system-aarch64 -m 4G -M virt -serial stdio -kernel DaareOS.elf
-
+   \qemu\qemu-system-arm -m 1G -M raspi2b -serial stdio -kernel kernel8.elf
+   C:\qemu\qemu-system-aarch64.exe -m 4G -M virt -serial stdio -kernel kernel8.elf
+ \"C:\qemu\qemu-system-aarch64.exe -M raspi3 -kernel kernel8.img -serial stdio -display gtk
 MAKEFile = make
 
 int start = 0;
@@ -54,26 +54,25 @@ GUI(int screenWidth,int screenHeight)
    
   while (1);
 }*/
-#include "io.h"
-#include "fb.h"
+#include "headers/io.h"
+#include "headers/fb.h"
 
 void main()
 {
-   uart_init();
+    uart_init();
     fb_init();
+    displayMailboxValues();
+    // drawRect(150,150,400,400,0x03,0);
+    drawRect(0,0,1275,715,0x03,0);
+    // drawCircle(200,200,250,0x0e,0);
+    // drawCircle(960,540,50,0x13,1);
 
-    drawRect(150,150,400,400,0x03,0);
-    drawRect(300,300,350,350,0x2e,1);
+    // drawPixel(250,250,0x0e);
 
-    drawCircle(960,540,250,0x0e,0);
-    drawCircle(960,540,50,0x13,1);
+    // drawChar('O',100,100,0x05,2);
+    // drawString(10,10,"Hello world!",0x0f,2);
 
-    drawPixel(250,250,0x0e);
-
-    drawChar('O',500,500,0x05);
-    drawString(100,100,"Hello world!",0x0f);
-
-    drawLine(100,500,350,700,0x0c);
+    // drawLine(100,500,350,700,0x0c);
 
   while (1);
 }

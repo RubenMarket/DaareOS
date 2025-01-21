@@ -1,6 +1,6 @@
-#include "io.h"
-#include "mb.h"
-#include "terminal.h"
+#include "headers/io.h"
+#include "headers/mb.h"
+#include "headers/terminal.h"
 
 unsigned int width, height, pitch, isrgb;
 unsigned char *fb;
@@ -13,14 +13,14 @@ void fb_init()
     mbox[2] = MBOX_TAG_SETPHYWH; // Tag identifier
     mbox[3] = 8; // Value size in bytes
     mbox[4] = 0;
-    mbox[5] = 1920; // Value(width)
-    mbox[6] = 1080; // Value(height)
+    mbox[5] = 1280; // Value(width)
+    mbox[6] = 720; // Value(height)
 
     mbox[7] = MBOX_TAG_SETVIRTWH;
     mbox[8] = 8;
     mbox[9] = 8;
-    mbox[10] = 1920;
-    mbox[11] = 1080;
+    mbox[10] = 1280;
+    mbox[11] = 720;
 
     mbox[12] = MBOX_TAG_SETVIRTOFF;
     mbox[13] = 8;
@@ -47,7 +47,7 @@ void fb_init()
     mbox[30] = MBOX_TAG_GETPITCH;
     mbox[31] = 4;
     mbox[32] = 4;
-    mbox[33] = 0; // Bytes per line
+    mbox[33] = 1920; // Bytes per line
 
     mbox[34] = MBOX_TAG_LAST;
 
@@ -140,22 +140,22 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
     }
 }
 
-void drawChar(unsigned char ch, int x, int y, unsigned char attr)
+void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 {
     unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
 
-    for (int i=0;i<FONT_HEIGHT;i++) {
-	for (int j=0;j<FONT_WIDTH;j++) {
-	    unsigned char mask = 1 << j;
-	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
+        for (int j=0;j<(FONT_WIDTH*zoom);j++) {
+            unsigned char mask = 1 << (j/zoom);
+            unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
 
-	    drawPixel(x+j, y+i, col);
-	}
-	glyph += FONT_BPL;
+            drawPixel(x+j, y+i, col);
+        }
+        glyph += (i%zoom) ? 0 : FONT_BPL;
     }
 }
 
-void drawString(int x, int y, char *s, unsigned char attr)
+void drawString(int x, int y, char *s, unsigned char attr, int zoom)
 {
     while (*s) {
        if (*s == '\r') {
@@ -163,9 +163,51 @@ void drawString(int x, int y, char *s, unsigned char attr)
        } else if(*s == '\n') {
           x = 0; y += FONT_HEIGHT;
        } else {
-	  drawChar(*s, x, y, attr);
+	  drawChar(*s, x, y, attr, zoom);
           x += FONT_WIDTH;
        }
        s++;
     }
+}
+    void intToHexStr(unsigned int num, char *str) {
+    char hex_chars[] = "0123456789ABCDEF";
+    str[0] = '0';
+    str[1] = 'x';  // Prefix for hexadecimal
+    for (int i = 0; i < 8; i++) {
+        str[9 - i] = hex_chars[num & 0xF];
+        num >>= 4;
+    }
+    str[10] = '\0'; // Null-terminate the string
+}
+void displayMailboxValues() {
+    char hexStr[11]; // Buffer for hex string (e.g., "0x00000000")
+
+    // Display each mailbox value with a label
+    intToHexStr(mbox[5], hexStr);
+    drawString(0, 0, "Physical Width: ", 0x07, 1);  // Example attribute
+    drawString(150, 0, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[6], hexStr);
+    drawString(0, 20, "Physical Height: ", 0x07, 1);
+    drawString(150, 20, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[10], hexStr);
+    drawString(0, 40, "Virtual Width: ", 0x07, 1);
+    drawString(150, 40, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[11], hexStr);
+    drawString(0, 60, "Virtual Height: ", 0x07, 1);
+    drawString(150, 60, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[33], hexStr);
+    drawString(0, 80, "Pitch: ", 0x07, 1);
+    drawString(150, 80, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[28], hexStr);
+    drawString(0, 100, "Framebuffer Addr: ", 0x07, 1);
+    drawString(150, 100, hexStr, 0x07, 1);
+
+    intToHexStr(mbox[29], hexStr);
+    drawString(0, 120, "Framebuffer Size: ", 0x07, 1);
+    drawString(150, 120, hexStr, 0x07, 1);
 }
